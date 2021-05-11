@@ -24,7 +24,8 @@ from pathlib import Path
 import datetime
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-log = open(f'{str(datetime.datetime.now()) + ".log" }', 'w+')
+Path('log').mkdir(parents=True, exist_ok=True)
+log = open(f'{"log/" + (str(datetime.datetime.now()) + ".log") }', 'w+')
 graphs = []
 labels = []
 cnts = []
