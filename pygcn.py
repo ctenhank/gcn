@@ -22,6 +22,7 @@ from tqdm import tqdm
 
 from pathlib import Path
 import datetime
+import multiprocessing
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 Path('log').mkdir(parents=True, exist_ok=True)
@@ -44,9 +45,10 @@ def get_edge_lists(dir_path):
     first = True
     types = []
     for type_ in path.glob('*'):
-        types.append(type_.name)
+        #types.append(type_.name)
         # log.write()
         for repo in type_.glob('*'):
+            types.append(type_.name)
             cnt = 0
             num_class += 1
             for file in repo.glob('*'):
@@ -178,16 +180,16 @@ def learn(model_params, experiment_number, dataset):
     log.write(f'Batch Size: {batch_size}\n')
     log.write('-'*100 + '\n')
     log.flush()
-
+    workers_count = min(int(multiprocessing.cpu_count() * 0.8), batch_size)
     num_train = int(num_examples * split_rate)
 
     train_sampler = SubsetRandomSampler(torch.arange(num_train))
     test_sampler = SubsetRandomSampler(torch.arange(num_train, num_examples))
 
     train_dataloader = GraphDataLoader(
-        dataset, sampler=train_sampler, batch_size=batch_size, drop_last=False)
+        dataset, sampler=train_sampler, batch_size=batch_size, drop_last=False, num_workers=workers_count)
     test_dataloader = GraphDataLoader(
-        dataset, sampler=test_sampler, batch_size=batch_size, drop_last=False)
+        dataset, sampler=test_sampler, batch_size=batch_size, drop_last=False, num_workers=workers_count)
 
     # 모델 설정
     model = Classifier(1, 256, 5)
