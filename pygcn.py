@@ -294,7 +294,27 @@ if __name__ == "__main__":
     log.write(f'The length of the dataset: {num_examples}\n')
 
     model_params = {
-        {'split_rate': 0.8, 'epochs': 40, 'lr': 0.001, 'batch_size': 64}
+	{'split_rate': 0.8, 'epochs': 20, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.8, 'epochs': 20, 'lr': 0.005, 'batch_size': 64},
+	{'split_rate': 0.8, 'epochs': 20, 'lr': 0.01, 'batch_size': 64},
+	{'split_rate': 0.8, 'epochs': 20, 'lr': 0.001, 'batch_size': 32},
+
+        {'split_rate': 0.75, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.75, 'epochs': 40, 'lr': 0.005, 'batch_size': 64},
+	{'split_rate': 0.75, 'epochs': 40, 'lr': 0.0001, 'batch_size': 64}
+	{'split_rate': 0.8, 'epochs': 40, 'lr': 0.001, 'batch_size': 32},
+
+	{'split_rate': 0.8, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.8, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.8, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
+
+	{'split_rate': 0.7, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.7, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.7, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
+
+	{'split_rate': 0.75, 'epochs': 80, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.70, 'epochs': 80, 'lr': 0.001, 'batch_size': 64},
+	{'split_rate': 0.8, 'epochs': 80, 'lr': 0.001, 'batch_size': 64}
     }
     experiment_num = 0
     for model_param in model_params:
