@@ -212,7 +212,6 @@ def learn(model_params, experiment_number, dataset):
         epoch_loss = 0
         total_samples = 0
 
-        i = 0
         for b, (X_train, y_train) in enumerate(train_dataloader):
             y_prediction = model(X_train)
             loss = loss_func(y_prediction, y_train)
@@ -230,6 +229,9 @@ def learn(model_params, experiment_number, dataset):
 
         epoch_accuracy = epoch_corr * 100 / total_samples
         epoch_loss = epoch_loss / total_samples
+        print(f'Epoch {i}, accuracy: {epoch_accuracy}, loss: {epoch_loss}')
+        log.write(f'Epoch {i}, accuracy: {epoch_accuracy}, loss: {epoch_loss}\n')
+        log.flush()
 
         train_losses.append(epoch_loss)
         train_accuracy.append(epoch_accuracy)
@@ -277,7 +279,6 @@ def learn(model_params, experiment_number, dataset):
     log.write('Accuracy of argmax predictions on the test set: {:4f}%\n'.format(total_argmax_test_acc * 100 /total_test_sample))
     log.write('-' * 100 + '\n')
     log.flush()
-    log.close()
     
 if __name__ == "__main__":
     import argparse
@@ -293,7 +294,7 @@ if __name__ == "__main__":
     print(f'The length of the dataset: {num_examples}')
     log.write(f'The length of the dataset: {num_examples}\n')
 
-    model_params = {
+    model_params = [
 	{'split_rate': 0.8, 'epochs': 20, 'lr': 0.001, 'batch_size': 64},
 	{'split_rate': 0.8, 'epochs': 20, 'lr': 0.005, 'batch_size': 64},
 	{'split_rate': 0.8, 'epochs': 20, 'lr': 0.01, 'batch_size': 64},
@@ -301,7 +302,7 @@ if __name__ == "__main__":
 
         {'split_rate': 0.75, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
 	{'split_rate': 0.75, 'epochs': 40, 'lr': 0.005, 'batch_size': 64},
-	{'split_rate': 0.75, 'epochs': 40, 'lr': 0.0001, 'batch_size': 64}
+	{'split_rate': 0.75, 'epochs': 40, 'lr': 0.0001, 'batch_size': 64},
 	{'split_rate': 0.8, 'epochs': 40, 'lr': 0.001, 'batch_size': 32},
 
 	{'split_rate': 0.8, 'epochs': 40, 'lr': 0.001, 'batch_size': 64},
@@ -315,12 +316,12 @@ if __name__ == "__main__":
 	{'split_rate': 0.75, 'epochs': 80, 'lr': 0.001, 'batch_size': 64},
 	{'split_rate': 0.70, 'epochs': 80, 'lr': 0.001, 'batch_size': 64},
 	{'split_rate': 0.8, 'epochs': 80, 'lr': 0.001, 'batch_size': 64}
-    }
+    ]
     experiment_num = 0
     for model_param in model_params:
         learn(model_param, experiment_num, dataset)
         experiment_num += 1
-    
+    log.close()    
 
 
 
