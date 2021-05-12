@@ -26,15 +26,13 @@ import multiprocessing
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 Path('log').mkdir(parents=True, exist_ok=True)
-log = open(f'{"log/" + (str(datetime.datetime.now()) + ".log") }', 'w+')
-graphs = []
-labels = []
-cnts = []
-acc_cnts = []
-label = []
-num_class =0
 
 def get_edge_lists(dir_path):
+    global label
+    global acc_cnts
+    global graphs
+    global labels
+    global cnts
     global num_class
     path = Path(dir_path)
     f = []
@@ -77,21 +75,36 @@ def get_edge_lists(dir_path):
     log.write('-'*100 + '\n')
     log.flush()
 
-    with multiprocessing.Pool(int(multiprocessing.cpu_count()*0.8)) as p:
+    with multiprocessing.Manager() as manager:
+        G = manager.list()
+        L = manager.list()
         files = []
+        processes = []
         for idx, file in enumerate(f):
             files.append((idx, file))
-        p.map(edge_list_to_graph, files)
-        p.join()
+        for file in files:
+            p = multiprocessing.Process(target=edge_list_to_graph, args=(file, G, L))
+            p.start()
+            processes.append(p)
+        for p in processes:
+            p.join()
+        graphs = list(G)
+        labels = list(L)
 
 
-def edge_list_to_graph(f):
+def edge_list_to_graph(f, G, L):
+    global label
+    global acc_cnts
+    global graphs
+    global labels
+    global cnts
+    global num_class
     i = f[0]
     f = str(f[1])
     print(f'Preprocessing file: {f}')
     with open(f, "rb") as file:
         edges = nx.read_edgelist(file, create_using=nx.Graph, nodetype=int)
-
+    
         # for labeling class of malware
         class_ = 0
         found = False
@@ -104,14 +117,17 @@ def edge_list_to_graph(f):
             class_ = len(acc_cnts) + 1
 
         hetero_graph = dgl.from_networkx(edges)
-        labels.append(class_)
-        graphs.append(hetero_graph)
-        
+
+        print(f'graphlen: {len(graphs)}')
+        L.append(class_)
+        G.append(hetero_graph)
 
 
 class MyDataset(object):
-    def __init__(self):
+    def __init__(self, graphs, labels):
         super(MyDataset, self).__init__()
+        print(len(graphs))
+        print(labels)
         self.graphs = graphs
         self.labels = labels
 
@@ -273,6 +289,14 @@ def learn(model_params, experiment_number, dataset):
     log.flush()
     
 if __name__ == "__main__":
+    log = open(f'{"log/" + (str(datetime.datetime.now()) + ".log") }', 'w+')
+    graphs = []
+    labels = []
+    cnts = []
+    acc_cnts = []
+    label = []
+    num_class =0
+
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('path')
@@ -280,8 +304,9 @@ if __name__ == "__main__":
     # d = r"C:\Users\jw\malnet-graphs-tiny"
     path = args.path
     get_edge_lists(path)
-    dataset = MyDataset()
-    graph, label = dataset[0]
+    print(graphs)
+    dataset = MyDataset(graphs, labels)
+    graph, label = dataset[0] 
     num_examples = len(dataset)
     print(f'The length of the dataset: {num_examples}')
     log.write(f'The length of the dataset: {num_examples}\n')
