@@ -78,29 +78,28 @@ def get_edge_lists(dir_path):
     with multiprocessing.Manager() as manager:
         G = manager.list()
         L = manager.list()
-        files = []
-        processes = []
+        args = []
         for idx, file in enumerate(f):
-            files.append((idx, file))
-        for file in files:
-            p = multiprocessing.Process(target=edge_list_to_graph, args=(file, G, L))
-            p.start()
-            processes.append(p)
-        for p in processes:
-            p.join()
+            args.append((idx, file, G, L))
+
+        with multiprocessing.Pool(int(multiprocessing.cpu_count() * 0.8)) as p:
+            p.map(edge_list_to_graph, args)
+
         graphs = list(G)
         labels = list(L)
 
 
-def edge_list_to_graph(f, G, L):
+def edge_list_to_graph(args):
     global label
     global acc_cnts
     global graphs
     global labels
     global cnts
     global num_class
-    i = f[0]
-    f = str(f[1])
+    i = args[0]
+    f = str(args[1])
+    G = args[2]
+    L = args[3]
     print(f'Preprocessing file: {f}')
     with open(f, "rb") as file:
         edges = nx.read_edgelist(file, create_using=nx.Graph, nodetype=int)
@@ -118,7 +117,6 @@ def edge_list_to_graph(f, G, L):
 
         hetero_graph = dgl.from_networkx(edges)
 
-        print(f'graphlen: {len(graphs)}')
         L.append(class_)
         G.append(hetero_graph)
 
